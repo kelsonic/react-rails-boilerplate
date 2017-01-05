@@ -1,29 +1,27 @@
 import React, { PropTypes } from 'react';
 import HelloWorldWidget from '../components/HelloWorldWidget';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { Map } from 'immutable';
+import * as helloWorldActionCreators from '../actions/helloWorldActionCreators';
 
-// Simple example of a React "smart" component
-export default class HelloWorld extends React.Component {
-  static propTypes = {
-    name: PropTypes.string.isRequired, // this is passed from the Rails view
-  };
-
-  constructor(props, context) {
-    super(props, context);
-
-    // How to set initial state in ES6 class syntax
-    // https://facebook.github.io/react/docs/reusable-components.html#es6-classes
-    this.state = { name: this.props.name };
-  }
-
-  updateName(name) {
-    this.setState({ name });
-  }
-
-  render() {
-    return (
-      <div>
-        <HelloWorldWidget name={this.state.name} updateName={e => this.updateName(e)} />
-      </div>
-    );
-  }
+function select(state) {
+  return { $$helloWorldStore: state.$$helloWorldStore };
 }
+
+const HelloWorld = (props) => {
+  const { dispatch, $$helloWorldStore } = props;
+  const actions = bindActionCreators(helloWorldActionCreators, dispatch);
+  const { updateName } = actions;
+  const name = $$helloWorldStore.get('name');
+  return (
+    <HelloWorldWidget {...{ updateName, name }} />
+  );
+};
+
+HelloWorld.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  $$helloWorldStore: PropTypes.instanceOf(Map).isRequired,
+};
+
+export default connect(select)(HelloWorld);
